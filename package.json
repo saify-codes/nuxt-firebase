@@ -14,8 +14,8 @@
     "nuxi": "^3.14.0",
     "nuxt": "^3.13.0",
     "vue": "latest",
-    "vue-fragment": "^1.6.0",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "vue3-lottie": "^3.3.1"
   },
   "overrides": {
     "vue": "latest"
