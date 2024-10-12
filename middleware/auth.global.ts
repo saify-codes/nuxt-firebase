@@ -6,13 +6,21 @@ const publicRoutes = [
   /*Add more routes here*/
 ];
 
-export default async function defineNuxtRouteMiddleware(
-  to: RouteLocationNormalized,
-  from: RouteLocationNormalized
-) {
-  if (!Auth.authenticated() && !publicRoutes.includes(to.path)) {
-    return navigateTo("/signin");
-  } else if (Auth.authenticated() && authRoutes.includes(to.path)) {
-    return navigateTo("/dashboard");
-  }
-}
+export default defineNuxtRouteMiddleware((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+
+  const { session } = useAuth();
+
+  watch(session, async ({ status }) => {
+
+    if (status === 'unauthenticated' && !publicRoutes.includes(to.path)) {
+      return navigateTo('/signin'); // Redirect to login page
+    }
+
+    if (status === 'authenticated' && authRoutes.includes(to.path)) {
+      return navigateTo('/dashboard'); // Redirect authenticated users away from auth pages
+    }
+
+  })
+
+});
+

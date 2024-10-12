@@ -5,8 +5,4 @@
 
 <script setup>
 
-
-console.log(Auth.authenticated())
-
-
 </script>

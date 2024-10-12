@@ -14,7 +14,7 @@ export const auth = defineStore("auth", function () {
   const session: sessionType = reactive({
     user: null,
     token: null,
-    status: "loading",
+    status: 'loading',
   });
 
   function createSession(sessionObject: any) {
@@ -31,28 +31,24 @@ export const auth = defineStore("auth", function () {
     localStorage.removeItem("auth-session");
   }
 
-  async function initializeSession() {
-    setTimeout(() => {
-      const json = localStorage.getItem("auth-session");
+  function initializeSession() {
+    
+    const json      = localStorage.getItem("auth-session");
+    
+    if (json) {
+      const { token, user } = JSON.parse(json);
+      session.status = "authenticated";
+      session.token = token;
+      session.user = user;
+    } else {
+      session.status = "unauthenticated";
+    }
 
-      if (json) {
-        const { token, user } = JSON.parse(json);
-        session.status = "authenticated";
-        session.token = token;
-        session.user = user;
-      } else {
-        session.status = "authenticated";
-      }
-
-      console.log("session initialized");
-    }, 5000);
+    console.info("session initialized");
   }
 
   function isAuthenticated() {
     return session.status == "authenticated"
-    return new Promise((res) => {
-      if (session.status == "authenticated") res("authenticated");
-    });
   }
 
   function userRole() {
@@ -67,4 +63,6 @@ export const auth = defineStore("auth", function () {
     destroySession,
     initializeSession,
   };
+
+
 });
