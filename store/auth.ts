@@ -32,7 +32,7 @@ export const auth = defineStore("auth", function () {
     document.cookie = "auth-token=; max-age=-1" // delete cookie
   }
 
-  function initializeSession() {
+  function init() {
 
     const token = useCookie('auth-token').value
 
@@ -90,7 +90,7 @@ export const auth = defineStore("auth", function () {
     session,
     userRole,
     isAuthenticated,
-    initializeSession,
+    init,
     login,
     logout
   };

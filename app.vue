@@ -6,9 +6,13 @@
 
 
 <script setup>
+
+import firebaseService from '~/services/firebaseService';
+
 const auth = useAuth();
 
 onMounted(() => {
-  auth.initializeSession();
+  auth.init();
+  firebaseService.init()
 });
 </script>
