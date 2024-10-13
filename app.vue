@@ -1,16 +1,14 @@
 <template>
   <NuxtLayout>
-    <NuxtPage/>
+    <NuxtPage />
   </NuxtLayout>
 </template>
 
 
 <script setup>
+const auth = useAuth();
 
-const auth = useAuth()
-
-onMounted(()=>{
-  auth.initializeSession()
-})
-
+onMounted(() => {
+  auth.initializeSession();
+});
 </script>
