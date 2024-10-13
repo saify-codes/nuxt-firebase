@@ -51,12 +51,12 @@ const { useField, handleSubmit } = useForm({
 });
 
 const email = useField("email", {
-    rule: { required: true },
+    rule: { required: false },
 });
 
 const password = useField("password", {
     rule: {
-        required: true,
+        required: false,
         min: 8
     },
 });
@@ -67,8 +67,10 @@ const onSubmit = handleSubmit(async (data) => {
     // auth.login(email, password)
     // console.log("loggedin");
 
-    await db.add('user', {name: 'rafay'})
+    // await db.add('user', {name: 'rafay', id: Math.round(Math.random() * 10e3)})
 
+    console.log(await db.truncate('users'));
+    
 
     
 

@@ -1,8 +1,24 @@
 import { initializeApp, type FirebaseApp, } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { Firestore, getFirestore, type WhereFilterOp } from 'firebase/firestore';
 import { firebaseConfig } from "~/config/firebaseConfig";
-import { doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, collection as firestoreCollection } from 'firebase/firestore';
+import {
+    doc,
+    addDoc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    getDoc,
+    getDocs,
+    query,
+    where,
+    writeBatch,
+    limit,
+    QuerySnapshot,
+    Firestore,
+    getFirestore,
+    type WhereFilterOp,
+    collection as firestoreCollection
+} from 'firebase/firestore';
 
 export default class Firebse {
 
@@ -94,5 +110,34 @@ export default class Firebse {
 
         return data
     }
+    static async deleteCollection(collectionPath: string) {
+        const collectionRef = firestoreCollection(Firebse.db, collectionPath);
+        const batchSize = 500;
+        let querySnapshot: QuerySnapshot;
+
+        try {
+            do {
+                const q = query(collectionRef, limit(batchSize));
+                querySnapshot = await getDocs(q);
+
+                if (querySnapshot.size === 0) {
+                    break;
+                }
+
+                const batch = writeBatch(Firebse.db);
+                querySnapshot.docs.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+            } while (querySnapshot.size >= batchSize);
+
+            return true;
+        } catch (e) {
+            console.error('Error deleting collection', collectionPath, e);
+            return false;
+        }
+    }
+
     /* ---------------------------- CRUD OPERATIONS ---------------------------- */
 }
