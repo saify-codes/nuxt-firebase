@@ -9,8 +9,7 @@
 
 function logout(){
     const auth = useAuth()
-    auth.destroySession()
-    navigateTo('/signin')
+    auth.logout()
 }
 
 </script>

@@ -18,11 +18,11 @@ export const auth = defineStore("auth", function () {
     status: 'loading'
   });
 
-  function createSession(sessionObject: any) {
+  function createSession(sessionObject: any, expiry: number | null = null) {
     session.status = "authenticated";
     session.token = sessionObject.token;
     session.user = sessionObject.user;
-    document.cookie = `auth-token=${sessionObject.token}; max-age=${sessionObject.expiry ?? ''}` // set cookie
+    document.cookie = `auth-token=${sessionObject.token}; max-age=${expiry ?? ''}` // set cookie
   }
 
   function destroySession() {
@@ -45,10 +45,10 @@ export const auth = defineStore("auth", function () {
 
       } catch {
         document.cookie = "auth-token=; max-age=-1" // delete cookie
-        session.status  = "unauthenticated";
+        session.status = "unauthenticated";
         navigateTo('/signin')
       }
-    }else{
+    } else {
       session.status = "unauthenticated";
     }
 
@@ -63,13 +63,36 @@ export const auth = defineStore("auth", function () {
     return session.user?.role;
   }
 
+  function login(email: string, pass: string, remember?: number) {
+
+    const x = {
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiMTIzNDU2Nzg5MCIsImVtYWlsIjoiSm9obiBEb2UiLCJhdmF0YXIiOjE1MTYyMzkwMjJ9.XJhBR9EzNLg23fn5OrX7J30BJeDKNdKUnbke72eAPpk',
+      user: {
+        name: 'anas',
+        email: 'anas@gmail.com',
+        avatar: 'avatar.png'
+      }
+    }
+
+    createSession(x, remember)
+    navigateTo('/')
+
+    
+
+  }
+
+  function logout() {
+    destroySession()
+    navigateTo('/signin')
+  }
+
   return {
     session,
     userRole,
     isAuthenticated,
-    createSession,
-    destroySession,
     initializeSession,
+    login,
+    logout
   };
 
 

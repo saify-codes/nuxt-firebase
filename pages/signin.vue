@@ -16,15 +16,18 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <Checkbox id="remember" v-model="checked" :binary="true" />
+            <Checkbox id="remember" v-model="remember" :binary="true" />
             <label for="remember">Remember me</label>
         </div>
 
-        <Button type="submit">submit</Button>
+        <Button type="submit" label="Login" :loading="loading" />
 
-        <p>don't have an account? 
-            <router-link class="text-primary underline" to="/signup">signup here</router-link> 
+        <p>don't have an account?
+            <router-link class="text-primary underline" to="/signup">signup here</router-link>
         </p>
+
+
+
 
     </form>
 </template>
@@ -33,6 +36,11 @@
 import InputText from "primevue/inputtext";
 import Checkbox from 'primevue/checkbox';
 import { useForm } from "vue-hooks-form";
+
+
+const auth      = useAuth()
+const remember  = ref(false)
+const loading   = ref(false)
 
 const { useField, handleSubmit } = useForm({
     defaultValues: {},
@@ -45,15 +53,18 @@ const email = useField("email", {
 const password = useField("password", {
     rule: {
         required: true,
-        min: 6,
-        max: 10,
+        min: 8
     },
 });
 
-const checked = ref(false)
-
 const onSubmit = handleSubmit((data) => {
-  console.log(data)
+
+    const {email, password} = data
+    auth.login(email, password)
+
+    console.log("loggedin");
+    
+
 })
 
 
