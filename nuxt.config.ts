@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: [
     "~/assets/css/global.css",
-    'primeicons/primeicons.css',
+    "primeicons/primeicons.css",
   ],
   modules: [
     "@pinia/nuxt",
@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     "@nuxtjs/tailwindcss",
   ],
   primevue: {
+    importTheme: { from: '~/themes/aura.ts' },
     options: {
       ripple: true,
       theme: {
@@ -20,4 +21,9 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  tailwindcss: {
+    cssPath: ["~/assets/css/tailwind.css", { injectPosition: "first" }],
+    configPath: "tailwind.config.js",
+  }
 });

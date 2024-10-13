@@ -23,7 +23,7 @@
         <Button type="submit">submit</Button>
 
         <p>don't have an account? 
-            <router-link class="text-primary-500 underline" to="/signup">signup here</router-link> 
+            <router-link class="text-primary underline" to="/signup">signup here</router-link> 
         </p>
 
     </form>
