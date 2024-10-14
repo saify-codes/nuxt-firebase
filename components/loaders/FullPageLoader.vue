@@ -6,6 +6,7 @@
         background: #FFF;
         display: grid;
         place-content: center;
+        z-index: 999;
     }
 </style>
 

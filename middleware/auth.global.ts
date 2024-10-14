@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware((to: RouteLocationNormalized, from: Rou
   if (!token && !publicRoutes.includes(to.path)) {
     return navigateTo('/signin'); // Redirect to login page
   } else if (token && authRoutes.includes(to.path)) {
-    return navigateTo('/dashboard'); // Redirect authenticated users away from auth pages
+    return navigateTo('/'); // Redirect authenticated users away from auth pages
   }
   
 });

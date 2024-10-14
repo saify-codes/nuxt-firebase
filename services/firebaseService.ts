@@ -1,6 +1,16 @@
-import { initializeApp, type FirebaseApp, } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { firebaseConfig } from "~/config/firebaseConfig";
+import { initializeApp, type FirebaseApp, } from "firebase/app";
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
+    signOut,
+    type User
+} from "firebase/auth";
 import {
     doc,
     addDoc,
@@ -44,6 +54,36 @@ export default class Firebse {
             throw error;
         }
     }
+
+    static authenticated() {
+
+        return new Promise<User | null>(res => {
+            onAuthStateChanged(getAuth(), user => {
+                res(user)
+            })
+        })
+    }
+
+    static async login(email: string, password: string, remember: boolean) {
+        const auth = getAuth();
+        const persistence = remember ? browserLocalPersistence : browserSessionPersistence;
+        await setPersistence(auth, persistence); // Set persistence based on the remember me checkbox
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        return user;
+    }
+
+    static async logout() {
+        const auth = getAuth();
+        try {
+            await signOut(auth);
+            return true;
+        } catch (error: any) {
+            console.error("Error signing out:", error.code, error.message);
+            return false;
+        }
+    }
+
     /* ---------------------------- AUTH OPERATIONS ---------------------------- */
 
 

@@ -1,12 +1,10 @@
 import { defineStore } from "pinia";
 import { jwtDecode } from "jwt-decode";
+import FirebaseSevice from '~/services/firebaseService'
 
-type User = {
-  [key: string]: any;
-};
 
 type sessionType = {
-  user: User | null;
+  user: Record<string, any> | null;
   token: string | null;
   status: string;
 };
@@ -18,11 +16,11 @@ export const auth = defineStore("auth", function () {
     status: 'loading'
   });
 
-  function createSession(sessionObject: any, expiry: number | null = null) {
+  function createSession(status: string, token: string, user: Record<string, any>) {
     session.status = "authenticated";
-    session.token = sessionObject.token;
-    session.user = sessionObject.user;
-    document.cookie = `auth-token=${sessionObject.token}; max-age=${expiry ?? ''}` // set cookie
+    session.token = token;
+    session.user = user;
+    document.cookie = `auth-token=${token};` // set cookie.
   }
 
   function destroySession() {
@@ -32,27 +30,28 @@ export const auth = defineStore("auth", function () {
     document.cookie = "auth-token=; max-age=-1" // delete cookie
   }
 
-  function init() {
+  async function init() {
 
-    const token = useCookie('auth-token').value
+    const firebaseSession = await FirebaseSevice.authenticated();
 
-    if (token) {
-      try {
-        const data = jwtDecode(token);
-        session.status = "authenticated";
-        session.token = token;
-        session.user = data;
+    if (firebaseSession) {
 
-      } catch {
-        document.cookie = "auth-token=; max-age=-1" // delete cookie
-        session.status = "unauthenticated";
-        navigateTo('/signin')
-      }
+      const user = await FirebaseSevice.getData('users', firebaseSession.uid)
+      session.status = "authenticated";
+      session.token = await firebaseSession.getIdToken();
+      session.user = user;
+
     } else {
+      document.cookie = "auth-token=; max-age=-1" // delete cookie
       session.status = "unauthenticated";
     }
+    
+    watch(session, ({ status }) => {
+      if (status === 'authenticated') navigateTo('/')
+      else if(status === 'unauthenticated') navigateTo('/signin')
+    })
 
-    console.info("session initialized", session);
+    console.info("session initialized");
   }
 
   function isAuthenticated() {
@@ -63,27 +62,27 @@ export const auth = defineStore("auth", function () {
     return session.user?.role;
   }
 
-  function login(email: string, pass: string, remember?: number) {
+  async function login(email: string, password: string, remember: boolean) {
 
-    const x = {
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiMTIzNDU2Nzg5MCIsImVtYWlsIjoiSm9obiBEb2UiLCJhdmF0YXIiOjE1MTYyMzkwMjJ9.XJhBR9EzNLg23fn5OrX7J30BJeDKNdKUnbke72eAPpk',
-      user: {
-        name: 'anas',
-        email: 'anas@gmail.com',
-        avatar: 'avatar.png'
-      }
+    const response: any = { error: null }
+
+    try {
+      const user = await FirebaseSevice.login(email, password, remember)
+      const data = await FirebaseSevice.getData('users', user.uid)
+      createSession('authenticated', await user.getIdToken(), Object(data))
+
+    } catch (e) {
+      response.error = e
     }
 
-    createSession(x, remember)
-    navigateTo('/')
+    return response
 
-    
 
   }
 
-  function logout() {
+  async function logout() {
+    await FirebaseSevice.logout()
     destroySession()
-    navigateTo('/signin')
   }
 
   return {

@@ -35,14 +35,12 @@
 <script setup>
 import InputText from "primevue/inputtext";
 import Checkbox from 'primevue/checkbox';
-import firebaseService from "~/services/firebaseService";
 import { useForm } from "vue-hooks-form";
 
 
-const auth      = useAuth()
-const remember  = ref(false)
-const loading   = ref(false)
-
+const auth = useAuth()
+const remember = ref(false)
+const loading = ref(false)
 const db = useDB()
 
 
@@ -51,30 +49,33 @@ const { useField, handleSubmit } = useForm({
 });
 
 const email = useField("email", {
-    rule: { required: false },
+    rule: { required: true },
 });
 
 const password = useField("password", {
     rule: {
-        required: false,
+        required: true,
         min: 8
     },
 });
 
 const onSubmit = handleSubmit(async (data) => {
 
-    // const {email, password} = data
-    // auth.login(email, password)
-    // console.log("loggedin");
+    const { email, password } = data
+    withLoading(loading, async () => {
 
-    // await db.add('user', {name: 'rafay', id: Math.round(Math.random() * 10e3)})
+        const { error } = await auth.login(email, password)
 
-    console.log(await db.truncate('users'));
-    
+        if (error) {
+            alert('dddd')
+        }
 
-    
-
+    })
 })
 
+
+definePageMeta({
+    layout: "auth"
+})
 
 </script>

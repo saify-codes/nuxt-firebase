@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>This is home page</h1>
+        <h1>Welcome {{ Auth.user?.name }}</h1>
         <Button @click="logout" >logout</Button>
     </div>
 </template>

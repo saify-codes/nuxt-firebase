@@ -12,7 +12,8 @@ import firebaseService from '~/services/firebaseService';
 const auth = useAuth();
 
 onMounted(() => {
+  firebaseService.init() // always initialized firebase before any other service
   auth.init();
-  firebaseService.init()
 });
+
 </script>
