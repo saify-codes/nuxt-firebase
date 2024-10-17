@@ -30,14 +30,14 @@ import {
     collection as firestoreCollection
 } from 'firebase/firestore';
 
-export default class Firebse {
+export default class {
 
     private static app: FirebaseApp
     private static db: Firestore
 
     static init() {
-        Firebse.app = initializeApp(firebaseConfig);
-        Firebse.db = getFirestore(Firebse.app)
+        this.app = initializeApp(firebaseConfig);
+        this.db = getFirestore(this.app)
         // const analytics = getAnalytics(app);
     }
 
@@ -90,7 +90,7 @@ export default class Firebse {
     /* ---------------------------- CRUD OPERATIONS ---------------------------- */
     static async addData(collection: string, data: Record<string, any>) {
         try {
-            const docRef = await addDoc(firestoreCollection(Firebse.db, 'users'), data);
+            const docRef = await addDoc(firestoreCollection(this.db, 'users'), data);
             return docRef.id;
         } catch (e) {
             console.error('Error adding document to collection', collection, e);
@@ -100,7 +100,7 @@ export default class Firebse {
 
     static async setData(collection: string, id: string, data: Record<string, any>) {
         try {
-            await setDoc(doc(Firebse.db, collection, id), data);
+            await setDoc(doc(this.db, collection, id), data);
             return true;
 
         } catch (e) {
@@ -110,7 +110,7 @@ export default class Firebse {
     }
 
     static async updateData(collection: string, id: string, data: Record<string, any>) {
-        const userRef = doc(Firebse.db, collection, id);
+        const userRef = doc(this.db, collection, id);
         try {
             await updateDoc(userRef, data);
             return true
@@ -121,19 +121,19 @@ export default class Firebse {
     }
 
     static async deleteData(collection: string, id: string) {
-        await deleteDoc(doc(Firebse.db, collection, id));
+        await deleteDoc(doc(this.db, collection, id));
         return true
     }
 
     static async getData(collection: string, id: string) {
-        const docRef = doc(Firebse.db, collection, id);
+        const docRef = doc(this.db, collection, id);
         const docSnap = await getDoc(docRef);
         return docSnap.exists() ? docSnap.data() : null;
     }
 
     static async getAllData(collection: string) {
         const data: any[] = []
-        const querySnapshot = await getDocs(firestoreCollection(Firebse.db, collection));
+        const querySnapshot = await getDocs(firestoreCollection(this.db, collection));
         querySnapshot.forEach((doc) => {
             data.push({ id: doc.id, ...doc.data() })
         });
@@ -142,7 +142,7 @@ export default class Firebse {
 
     static async query(collection: string, field: string, operator: WhereFilterOp, value: any) {
         const data: any[] = []
-        const q = query(firestoreCollection(Firebse.db, collection), where(field, operator, value));
+        const q = query(firestoreCollection(this.db, collection), where(field, operator, value));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
             data.push({ id: doc.id, ...doc.data() })
@@ -151,7 +151,7 @@ export default class Firebse {
         return data
     }
     static async deleteCollection(collectionPath: string) {
-        const collectionRef = firestoreCollection(Firebse.db, collectionPath);
+        const collectionRef = firestoreCollection(this.db, collectionPath);
         const batchSize = 500;
         let querySnapshot: QuerySnapshot;
 
@@ -164,7 +164,7 @@ export default class Firebse {
                     break;
                 }
 
-                const batch = writeBatch(Firebse.db);
+                const batch = writeBatch(this.db);
                 querySnapshot.docs.forEach((doc) => {
                     batch.delete(doc.ref);
                 });

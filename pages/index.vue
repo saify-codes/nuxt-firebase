@@ -10,6 +10,7 @@
 function logout(){
     const auth = useAuth()
     auth.logout()
+    useSessionMessage().flash('auth', 'you have been logout')
 }
 
 </script>

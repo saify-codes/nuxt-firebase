@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { jwtDecode } from "jwt-decode";
 import FirebaseSevice from '~/services/firebaseService'
 
 
@@ -16,11 +15,11 @@ export const auth = defineStore("auth", function () {
     status: 'loading'
   });
 
-  function createSession(status: string, token: string, user: Record<string, any>) {
+  function createSession(status: string, token: string, user: Record<string, any>, persistance: boolean) {
     session.status = "authenticated";
     session.token = token;
     session.user = user;
-    document.cookie = `auth-token=${token};` // set cookie.
+    document.cookie = `auth-token=${token}; max-age=${persistance ? 2592000000 : ''}` // set cookie.
   }
 
   function destroySession() {
@@ -34,6 +33,9 @@ export const auth = defineStore("auth", function () {
 
     const firebaseSession = await FirebaseSevice.authenticated();
 
+    console.log("===>", firebaseSession);
+
+
     if (firebaseSession) {
 
       const user = await FirebaseSevice.getData('users', firebaseSession.uid)
@@ -44,11 +46,12 @@ export const auth = defineStore("auth", function () {
     } else {
       document.cookie = "auth-token=; max-age=-1" // delete cookie
       session.status = "unauthenticated";
+
     }
-    
+
     watch(session, ({ status }) => {
       if (status === 'authenticated') navigateTo('/')
-      else if(status === 'unauthenticated') navigateTo('/signin')
+      else if (status === 'unauthenticated') navigateTo('/signin')
     })
 
     console.info("session initialized");
@@ -69,15 +72,25 @@ export const auth = defineStore("auth", function () {
     try {
       const user = await FirebaseSevice.login(email, password, remember)
       const data = await FirebaseSevice.getData('users', user.uid)
-      createSession('authenticated', await user.getIdToken(), Object(data))
+      createSession('authenticated', await user.getIdToken(), Object(data), remember)
 
-    } catch (e) {
-      response.error = e
+    } catch (e: any) {
+
+      switch (e.code) {
+        case 'auth/invalid-email':
+          response.error = 'Invalid email'
+          break;
+        case 'auth/invalid-credential':
+          response.error = 'Invalid credentials'
+          break;
+        case 'auth/too-many-requests':
+          response.error = 'Too many attempts account temporary blocked'
+          break;
+      }
+
     }
 
     return response
-
-
   }
 
   async function logout() {

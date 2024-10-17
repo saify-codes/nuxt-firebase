@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     "@primevue/nuxt-module",
     "@nuxtjs/tailwindcss",
   ],
+  plugins: [{ src: '~/composables/useSessionMessage.ts', mode: 'client' }],
   primevue: {
     importTheme: { from: '~/themes/aura.ts' },
     options: {

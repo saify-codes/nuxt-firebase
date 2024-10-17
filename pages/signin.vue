@@ -3,6 +3,9 @@
     <form @submit.prevent="onSubmit"
         class="absolute inset-0 m-auto p-10 rounded-lg max-w-lg h-max shadow-md flex flex-col gap-5 item justify-center">
 
+        <Message severity="warn">{{ useSessionMessage().get('auth') }}</Message>
+        <Message v-if="loginError.show" severity="error">{{ loginError.message }}</Message>
+
         <div class="flex flex-col gap-2">
             <label for="email">Email</label>
             <InputText id="email" v-model="email.value" :ref="email.ref" />
@@ -35,13 +38,13 @@
 <script setup>
 import InputText from "primevue/inputtext";
 import Checkbox from 'primevue/checkbox';
+import Message from "primevue/message";
 import { useForm } from "vue-hooks-form";
-
 
 const auth = useAuth()
 const remember = ref(false)
 const loading = ref(false)
-const db = useDB()
+const loginError = reactive({ show: false, message: '' })
 
 
 const { useField, handleSubmit } = useForm({
@@ -49,7 +52,15 @@ const { useField, handleSubmit } = useForm({
 });
 
 const email = useField("email", {
-    rule: { required: true },
+    rule: {
+        required: true,
+        pattern: /^[^@]+@[^@]+\.[^@]+$/,
+        message: 'email is required or invalid'
+    },
+
+    message: {
+        pattern: "Please enter a valid email address."
+    },
 });
 
 const password = useField("password", {
@@ -62,12 +73,16 @@ const password = useField("password", {
 const onSubmit = handleSubmit(async (data) => {
 
     const { email, password } = data
-    withLoading(loading, async () => {
 
-        const { error } = await auth.login(email, password)
+    withLoading(loading, async () => {
+        const { error } = await auth.login(email, password, remember)
 
         if (error) {
-            alert('dddd')
+            loginError.show = true
+            loginError.message = error
+
+            console.log(error);
+
         }
 
     })
