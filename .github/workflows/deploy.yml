@@ -35,12 +35,13 @@ jobs:
     # Step 5: Add SSH private key from GitHub Secrets and configure SSH
     - name: Setup SSH for EC2
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.CICD }}  # GitHub secret for EC2 private key
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}  # GitHub secret for EC2 private key
       run: |
         mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/cicd_rsa
-        chmod 600 ~/.ssh/cicd_rsa
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H "your-ec2-public-ip" >> ~/.ssh/known_hosts
+        rsync -avz --delete-after --exclude='node_modules' ./ ubuntu@your-ec2-public-ip:/var/www/nuxt-app/
 
     # Step 6: Copy built files to the EC2 instance
     - name: Deploy to EC2 using Rsync
