@@ -1,0 +1,59 @@
+name: Deploy Nuxt 3 to EC2
+
+# Trigger the workflow on push or pull request to the 'main' branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the code from the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Step 2: Set up Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '23'  # Use Node.js 16 as Nuxt 3 requires it
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # Step 4: Build the Nuxt 3 application
+    - name: Build Nuxt 3 application
+      run: npm run build
+
+    # Step 5: Add SSH private key from GitHub Secrets and configure SSH
+    - name: Setup SSH for EC2
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.CICD }}  # GitHub secret for EC2 private key
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/cicd_rsa
+        chmod 600 ~/.ssh/cicd_rsa
+        ssh-keyscan -H "your-ec2-public-ip" >> ~/.ssh/known_hosts
+
+    # Step 6: Copy built files to the EC2 instance
+    - name: Deploy to EC2 using Rsync
+      run: |
+        rsync -avz --delete-after --exclude='node_modules' ./ ubuntu@your-ec2-public-ip:/var/www/nuxt-app/
+
+    # Step 7: Install dependencies on EC2 (just in case)
+    - name: Install dependencies on EC2
+      run: |
+        ssh -i ~/.ssh/cicd_rsa ubuntu@your-ec2-public-ip "cd /var/www/nuxt-app && npm install"
+
+    # Step 8: Restart the Nuxt app using PM2
+    - name: Restart Nuxt 3 application on EC2 using PM2
+      run: |
+        ssh -i ~/.ssh/cicd_rsa ubuntu@your-ec2-public-ip "cd /var/www/nuxt-app && pm2 restart nuxt-app || pm2 start npm --name nuxt-app -- run start"
+
